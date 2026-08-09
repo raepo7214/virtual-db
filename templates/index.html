@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>한국 버츄얼 DB</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .filter-bar { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-btn { padding: 6px 12px; text-decoration: none; border: 1px solid #ccc; border-radius: 4px; color: #333; }
+        .filter-btn.active { background-color: #007bff; color: white; border-color: #007bff; }
+        .search-box { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>한국 버츄얼 DB</h1>
+
+    <!-- 검색창 -->
+    <div class="search-box">
+        <form action="/" method="get">
+            <input type="text" name="q" placeholder="이름 검색..." value="{{ keyword }}">
+            <button type="submit">검색</button>
+            <a href="/">전체보기</a>
+        </form>
+    </div>
+
+    <!-- 초성 필터 버튼 -->
+    <div class="filter-bar">
+        <a href="/" class="filter-btn {% if not current_initial and not keyword %}active{% endif %}">전체</a>
+        {% for ch in initials %}
+            <a href="/?initial={{ ch }}" class="filter-btn {% if current_initial == ch %}active{% endif %}">{{ ch }}</a>
+        {% endfor %}
+    </div>
+
+    <!-- 데이터 테이블 -->
+    <table>
+        <thead>
+            <tr>
+                <th>이름</th>
+                <th>초성</th>
+                <th>플랫폼</th>
+                <th>채널</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in vtubers %}
+            <tr>
+                <td>{{ row['name'] }}</td>
+                <td>{{ row['initial_sound'] }}</td>
+                <td>{{ row['platform'] }}</td>
+                <td><a href="{{ row['channel_url'] }}" target="_blank">이동</a></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">검색 결과가 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
