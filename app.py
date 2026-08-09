@@ -6,6 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'virtual_db_super_secret_key'
 ADMIN_PASSWORD = 'admin_password_123!'
 
+# 초성 추출 함수
 def get_initial_sound(text):
     if not text:
         return '기타'
@@ -19,6 +20,28 @@ def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+# ★ login_required 정의를 라우트 선언보다 무조건 상단에 위치시켜야 합니다.
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# --- 이하 라우트 정의 ---
+
+@app.route('/')
+def index():
+    # ... (생략)
+    pass
+
+@app.route('/admin/bulk', methods=['GET', 'POST'])
+@login_required  # 여기서 사용
+def bulk_add():
+    # ... (생략)
+    pass
 
 @app.route('/admin/bulk', methods=['GET', 'POST'])
 @login_required
