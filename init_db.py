@@ -15,7 +15,7 @@ with open('schema.sql', encoding='utf-8') as f:
 
 cur = conn.cursor()
 
-# 테스트용 기본 데이터 (14개 필드 규격)
+# 14개 필드 규격 예시 데이터 (이름 ~ 유튜브 링크)
 sample_data = [
     ('강지', 'Gangzi', '치지직', '활동중', '스텔라이브', '여성', '', '', '', '인간', '파스텔', '🐾', 'https://chzzk.naver.com', 'https://youtube.com'),
 ]
@@ -31,7 +31,7 @@ for row in sample_data:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         row[0], row[1], initial, row[2], row[3], row[4],
-        row[5], row[6], row[7], '', row[9],
+        row[5], row[6], row[7], row[8], row[9],
         row[10], row[11], row[12], row[13]
     ))
 
