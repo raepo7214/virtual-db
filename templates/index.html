@@ -66,22 +66,71 @@
         <div class="card">
             <div>
                 <div class="card-header">
-                    <div>
-                        <h2 class="card-title">{{ row['name'] }} {{ row['oshi_mark'] or '' }}</h2>
-                        <div class="card-subtitle">{{ row['name_en'] or '' }}</div>
-                    </div>
-                    <span class="badge">{{ row['initial_sound'] }}</span>
-                </div>
-                
-                <div class="info-list">
-                    <div><span class="info-label">소속:</span> <span>{{ row['agency'] or '무소속' }}</span></div>
-                    <div><span class="info-label">플랫폼/상태:</span> <span>{{ row['platform'] or '-' }} / {{ row['status'] or '활동중' }}</span></div>
-                    <div><span class="info-label">생일/나이:</span> <span>{{ row['birthday'] or '-' }} ({{ row['age'] or '-' }})</span></div>
-                    <div><span class="info-label">종족/성별:</span> <span>{{ row['species'] or '-' }} / {{ row['gender'] or '-' }}</span></div>
-                    <div><span class="info-label">데뷔일:</span> <span>{{ row['debut_date'] or '-' }}</span></div>
-                    <div><span class="info-label">팬네임:</span> <span>{{ row['fan_name'] or '-' }}</span></div>
-                </div>
-            </div>
+    <div>
+        <!-- 1. 이름 옆 오시마크 예외 처리 ('없음'이거나 빈값이면 표시 안 함) -->
+        <h2 class="card-title">
+            {{ row['name'] }}
+            {% if row['oshi_mark'] and row['oshi_mark'] != '없음' %}
+                {{ row['oshi_mark'] }}
+            {% endif %}
+        </h2>
+        
+        <!-- 2. 영문 이름 예외 처리 -->
+        <div class="card-subtitle">
+            {% if row['name_en'] and row['name_en'] != '없음' %}
+                {{ row['name_en'] }}
+            {% endif %}
+        </div>
+    </div>
+    <span class="badge">{{ row['initial_sound'] }}</span>
+</div>
+
+<div class="info-list">
+    <!-- 3. 소속 예외 처리 -->
+    <div>
+        <span class="info-label">소속:</span> 
+        <span>{% if row['agency'] and row['agency'] != '없음' %}{{ row['agency'] }}{% else %}개인{% endif %}</span>
+    </div>
+    
+    <!-- 4. 플랫폼/상태 예외 처리 -->
+    <div>
+        <span class="info-label">플랫폼/상태:</span> 
+        <span>
+            {% if row['platform'] and row['platform'] != '없음' %}{{ row['platform'] }}{% else %}-{% endif %} / 
+            {% if row['status'] and row['status'] != '없음' %}{{ row['status'] }}{% else %}활동중{% endif %}
+        </span>
+    </div>
+    
+    <!-- 5. 생일/나이 예외 처리 -->
+    <div>
+        <span class="info-label">생일/나이:</span> 
+        <span>
+            {% if row['birthday'] and row['birthday'] != '없음' %}{{ row['birthday'] }}{% else %}-{% endif %} 
+            ({% if row['age'] and row['age'] != '없음' %}{{ row['age'] }}{% else %}-{% endif %})
+        </span>
+    </div>
+    
+    <!-- 6. 종족/성별 예외 처리 -->
+    <div>
+        <span class="info-label">종족/성별:</span> 
+        <span>
+            {% if row['species'] and row['species'] != '없음' %}{{ row['species'] }}{% else %}-{% endif %} / 
+            {% if row['gender'] and row['gender'] != '없음' %}{{ row['gender'] }}{% else %}-{% endif %}
+        </span>
+    </div>
+    
+    <!-- 7. 데뷔일 예외 처리 -->
+    <div>
+        <span class="info-label">데뷔일:</span> 
+        <span>{% if row['debut_date'] and row['debut_date'] != '없음' %}{{ row['debut_date'] }}{% else %}-{% endif %}</span>
+    </div>
+    
+    <!-- 8. 팬네임 예외 처리 -->
+    <div>
+        <span class="info-label">팬네임:</span> 
+        <span>{% if row['fan_name'] and row['fan_name'] != '없음' %}{{ row['fan_name'] }}{% else %}-{% endif %}</span>
+    </div>
+</div>
 
             <div class="card-footer">
                 {% if row['main_platform_url'] %}
