@@ -1,7 +1,8 @@
 import sqlite3
 
-# 한글 초성 추출 함수
 def get_initial_sound(text):
+    if not text:
+        return '기타'
     CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
     char_code = ord(text[0]) - 44032
     if 0 <= char_code <= 11172:
@@ -14,19 +15,25 @@ with open('schema.sql', encoding='utf-8') as f:
 
 cur = conn.cursor()
 
-# 테스트용 초기 데이터 (구글 시트/CSV 데이터를 이 형태로 순회하며 넣어주면 됩니다)
+# 테스트용 기본 데이터 (14개 필드 규격)
 sample_data = [
-    ('강지', '치지직', 'https://chzzk.naver.com'),
-    ('고세구', 'SOOP', 'https://soop.com'),
-    ('나나문', '유튜브', 'https://youtube.com'),
+    ('강지', 'Gangzi', '치지직', '활동중', '스텔라이브', '여성', '', '', '', '인간', '파스텔', '🐾', 'https://chzzk.naver.com', 'https://youtube.com'),
 ]
 
-for name, platform, url in sample_data:
+for row in sample_data:
+    name = row[0]
     initial = get_initial_sound(name)
-    cur.execute(
-        "INSERT INTO vtuber (name, initial_sound, platform, channel_url) VALUES (?, ?, ?, ?)",
-        (name, initial, platform, url)
-    )
+    cur.execute("""
+        INSERT INTO vtuber (
+            name, name_en, initial_sound, platform, status, agency,
+            gender, birthday, age, debut_date, species,
+            fan_name, oshi_mark, main_platform_url, youtube_url
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        row[0], row[1], initial, row[2], row[3], row[4],
+        row[5], row[6], row[7], '', row[9],
+        row[10], row[11], row[12], row[13]
+    ))
 
 conn.commit()
 conn.close()
