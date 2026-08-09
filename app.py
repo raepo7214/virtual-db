@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'virtual_db_super_secret_key'
 ADMIN_PASSWORD = 'admin_password_123!'
 
-# 초성 추출 함수
+# 1. 초성 추출 함수
 def get_initial_sound(text):
     if not text:
         return '기타'
@@ -16,12 +16,13 @@ def get_initial_sound(text):
         return CHOSUNG_LIST[char_code // 588]
     return '기타'
 
+# 2. DB 연결 함수
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-# ★ login_required 정의를 라우트 선언보다 무조건 상단에 위치시켜야 합니다.
+# 3. 로그인 필수 데코레이터 (라우트보다 무조건 위에 위치)
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -30,18 +31,42 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- 이하 라우트 정의 ---
+# -------------------------------------------------------------
+# 라우트 선언
+# -------------------------------------------------------------
 
 @app.route('/')
 def index():
-    # ... (생략)
-    pass
+    initial = request.args.get('initial', '')
+    keyword = request.args.get('q', '')
+    
+    conn = get_db_connection()
+    if initial:
+        vtubers = conn.execute('SELECT * FROM vtuber WHERE initial_sound = ? ORDER BY name', (initial,)).fetchall()
+    elif keyword:
+        vtubers = conn.execute('SELECT * FROM vtuber WHERE name LIKE ? ORDER BY name', (f'%{keyword}%',)).fetchall()
+    else:
+        vtubers = conn.execute('SELECT * FROM vtuber ORDER BY name').fetchall()
+    conn.close()
+    
+    initials = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+    return render_template('index.html', vtubers=vtubers, initials=initials, current_initial=initial, keyword=keyword)
 
-@app.route('/admin/bulk', methods=['GET', 'POST'])
-@login_required  # 여기서 사용
-def bulk_add():
-    # ... (생략)
-    pass
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['password'] == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('bulk_add'))
+        else:
+            error = '비밀번호가 올바르지 않습니다.'
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('index'))
 
 @app.route('/admin/bulk', methods=['GET', 'POST'])
 @login_required
@@ -56,7 +81,6 @@ def bulk_add():
             if not line:
                 continue
             
-            # 엑셀/구글시트 탭 구분(\t) 우선 처리, 없으면 콤마(,) 분리
             if '\t' in line:
                 parts = [p.strip() for p in line.split('\t')]
             else:
@@ -100,3 +124,6 @@ def bulk_add():
         return redirect(url_for('index'))
         
     return render_template('bulk_add.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
