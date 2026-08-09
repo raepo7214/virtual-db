@@ -72,43 +72,69 @@ def logout():
 @login_required
 def bulk_add():
     if request.method == 'POST':
-        raw_data = request.form.get('bulk_data', '')
-        lines = raw_data.strip().split('\n')
-        
         insert_rows = []
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-            
-            if '\t' in line:
-                parts = [p.strip() for p in line.split('\t')]
-            else:
-                parts = [p.strip() for p in line.split(',')]
-            
-            if len(parts) >= 1 and parts[0]:
-                name = parts[0]
-                name_en = parts[1] if len(parts) > 1 else ''
-                initial = get_initial_sound(name)
-                platform = parts[2] if len(parts) > 2 else ''
-                status = parts[3] if len(parts) > 3 else '활동중'
-                agency = parts[4] if len(parts) > 4 else ''
-                gender = parts[5] if len(parts) > 5 else ''
-                birthday = parts[6] if len(parts) > 6 else ''
-                age = parts[7] if len(parts) > 7 else ''
-                debut_date = parts[8] if len(parts) > 8 else ''
-                species = parts[9] if len(parts) > 9 else ''
-                fan_name = parts[10] if len(parts) > 10 else ''
-                oshi_mark = parts[11] if len(parts) > 11 else ''
-                main_platform_url = parts[12] if len(parts) > 12 else ''
-                youtube_url = parts[13] if len(parts) > 13 else ''
-                
-                insert_rows.append((
-                    name, name_en, initial, platform, status, agency,
-                    gender, birthday, age, debut_date, species,
-                    fan_name, oshi_mark, main_platform_url, youtube_url
-                ))
         
+        # 1. 표(Input) 형식 제출 처리
+        names = request.form.getlist('name[]')
+        if names and any(names):
+            names_en = request.form.getlist('name_en[]')
+            platforms = request.form.getlist('platform[]')
+            statuses = request.form.getlist('status[]')
+            agencies = request.form.getlist('agency[]')
+            genders = request.form.getlist('gender[]')
+            birthdays = request.form.getlist('birthday[]')
+            ages = request.form.getlist('age[]')
+            debut_dates = request.form.getlist('debut_date[]')
+            species_list = request.form.getlist('species[]')
+            fan_names = request.form.getlist('fan_name[]')
+            oshi_marks = request.form.getlist('oshi_mark[]')
+            main_urls = request.form.getlist('main_platform_url[]')
+            yt_urls = request.form.getlist('youtube_url[]')
+            
+            for i in range(len(names)):
+                name = names[i].strip()
+                if name:
+                    initial = get_initial_sound(name)
+                    insert_rows.append((
+                        name, names_en[i].strip(), initial, platforms[i].strip(),
+                        statuses[i].strip() or '활동중', agencies[i].strip(),
+                        genders[i].strip(), birthdays[i].strip(), ages[i].strip(),
+                        debut_dates[i].strip(), species_list[i].strip(),
+                        fan_names[i].strip(), oshi_marks[i].strip(),
+                        main_urls[i].strip(), yt_urls[i].strip()
+                    ))
+
+        # 2. 텍스트 대량 복사/붙여넣기 제출 처리
+        raw_data = request.form.get('bulk_data', '')
+        if raw_data.strip():
+            lines = raw_data.strip().split('\n')
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = [p.strip() for p in (line.split('\t') if '\t' in line else line.split(','))]
+                if len(parts) >= 1 and parts[0]:
+                    name = parts[0]
+                    initial = get_initial_sound(name)
+                    insert_rows.append((
+                        name,
+                        parts[1] if len(parts) > 1 else '',
+                        initial,
+                        parts[2] if len(parts) > 2 else '',
+                        parts[3] if len(parts) > 3 else '활동중',
+                        parts[4] if len(parts) > 4 else '',
+                        parts[5] if len(parts) > 5 else '',
+                        parts[6] if len(parts) > 6 else '',
+                        parts[7] if len(parts) > 7 else '',
+                        parts[8] if len(parts) > 8 else '',
+                        parts[9] if len(parts) > 9 else '',
+                        parts[10] if len(parts) > 10 else '',
+                        parts[11] if len(parts) > 11 else '',
+                        parts[12] if len(parts) > 12 else '',
+                        parts[13] if len(parts) > 13 else ''
+                    ))
+
+        # DB 저장
         if insert_rows:
             conn = get_db_connection()
             conn.executemany("""
@@ -120,10 +146,7 @@ def bulk_add():
             """, insert_rows)
             conn.commit()
             conn.close()
-            
-        return redirect(url_for('index'))
-        
-    return render_template('bulk_add.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        return redirect(url_for('index'))
+
+    return render_template('bulk_add.html')

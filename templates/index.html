@@ -5,51 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국 버츄얼 DB</title>
     <style>
-        body { font-family: 'Pretendard', sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; background-color: #f8f9fa; color: #333; }
+        body { font-family: 'Pretendard', sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; background-color: #f8f9fa; color: #333; }
         h1 { text-align: center; margin-bottom: 30px; }
         
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .search-box { display: flex; gap: 8px; }
-        .search-box input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 200px; }
-        .btn { padding: 8px 14px; border: none; border-radius: 6px; background-color: #007bff; color: white; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; }
+        .search-box input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 220px; }
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; background-color: #007bff; color: white; cursor: pointer; text-decoration: none; font-size: 14px; }
         .btn-secondary { background-color: #6c757d; }
         
         .filter-bar { margin-bottom: 30px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
         .filter-btn { padding: 6px 12px; text-decoration: none; border: 1px solid #e0e0e0; background-color: white; border-radius: 20px; color: #555; font-size: 14px; }
         .filter-btn.active { background-color: #007bff; color: white; border-color: #007bff; font-weight: bold; }
         
-        /* 카드 그리드 스타일 */
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
-        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .card-title { font-size: 20px; font-weight: bold; margin: 0; }
+        .card-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
+        .badge { background: #e9ecef; color: #495057; font-size: 12px; padding: 3px 8px; border-radius: 10px; font-weight: bold; }
         
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .card-title { font-size: 18px; font-weight: bold; margin: 0; }
-        .badge-initial { background: #e9ecef; color: #495057; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        .info-list { font-size: 13px; color: #555; margin: 12px 0; line-height: 1.6; }
+        .info-list div { display: flex; justify-content: space-between; border-bottom: 1px dashed #f0f0f0; padding: 2px 0; }
+        .info-label { color: #888; }
         
-        .card-body { margin-bottom: 16px; font-size: 14px; color: #666; }
-        .platform-tag { display: inline-block; background-color: #f1f3f5; color: #343a40; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        
-        .card-footer { text-align: right; }
-        .link-btn { display: block; text-align: center; padding: 8px; background: #28a745; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; }
-        .no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #888; }
+        .card-footer { display: flex; gap: 8px; margin-top: 10px; }
+        .link-btn { flex: 1; text-align: center; padding: 8px; background: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; }
+        .link-yt { background: #ff0000; }
     </style>
 </head>
 <body>
     <h1>한국 버츄얼 DB</h1>
 
     <div class="header-actions">
-        <!-- 검색창 -->
         <form action="/" method="get" class="search-box">
-            <input type="text" name="q" placeholder="이름 검색..." value="{{ keyword }}">
+            <input type="text" name="q" placeholder="이름/소속 검색..." value="{{ keyword }}">
             <button type="submit" class="btn">검색</button>
             <a href="/" class="btn btn-secondary">전체보기</a>
         </form>
 
-        <!-- Admin 버튼 -->
         <div>
             {% if session.get('logged_in') %}
-                <a href="/admin/bulk" class="btn">대량 등록</a>
+                <a href="/admin/bulk" class="btn">데이터 등록/대량 등록</a>
                 <a href="/logout" class="btn btn-secondary">로그아웃</a>
             {% else %}
                 <a href="/login" class="btn btn-secondary">관리자 로그인</a>
@@ -57,7 +54,6 @@
         </div>
     </div>
 
-    <!-- 초성 필터 버튼 -->
     <div class="filter-bar">
         <a href="/" class="filter-btn {% if not current_initial and not keyword %}active{% endif %}">전체</a>
         {% for ch in initials %}
@@ -65,25 +61,39 @@
         {% endfor %}
     </div>
 
-    <!-- 카드 목록 -->
     <div class="card-grid">
         {% for row in vtubers %}
         <div class="card">
             <div>
                 <div class="card-header">
-                    <h2 class="card-title">{{ row['name'] }}</h2>
-                    <span class="badge-initial">{{ row['initial_sound'] }}</span>
+                    <div>
+                        <h2 class="card-title">{{ row['name'] }} {{ row['oshi_mark'] or '' }}</h2>
+                        <div class="card-subtitle">{{ row['name_en'] or '' }}</div>
+                    </div>
+                    <span class="badge">{{ row['initial_sound'] }}</span>
                 </div>
-                <div class="card-body">
-                    <span class="platform-tag">{{ row['platform'] or '기타' }}</span>
+                
+                <div class="info-list">
+                    <div><span class="info-label">소속:</span> <span>{{ row['agency'] or '무소속' }}</span></div>
+                    <div><span class="info-label">플랫폼/상태:</span> <span>{{ row['platform'] or '-' }} / {{ row['status'] or '활동중' }}</span></div>
+                    <div><span class="info-label">생일/나이:</span> <span>{{ row['birthday'] or '-' }} ({{ row['age'] or '-' }})</span></div>
+                    <div><span class="info-label">종족/성별:</span> <span>{{ row['species'] or '-' }} / {{ row['gender'] or '-' }}</span></div>
+                    <div><span class="info-label">데뷔일:</span> <span>{{ row['debut_date'] or '-' }}</span></div>
+                    <div><span class="info-label">팬네임:</span> <span>{{ row['fan_name'] or '-' }}</span></div>
                 </div>
             </div>
+
             <div class="card-footer">
-                <a href="{{ row['channel_url'] }}" target="_blank" class="link-btn">채널 바로가기</a>
+                {% if row['main_platform_url'] %}
+                    <a href="{{ row['main_platform_url'] }}" target="_blank" class="link-btn">방송 채널</a>
+                {% endif %}
+                {% if row['youtube_url'] %}
+                    <a href="{{ row['youtube_url'] }}" target="_blank" class="link-btn link-yt">유튜브</a>
+                {% endif %}
             </div>
         </div>
         {% else %}
-        <div class="no-result">검색 결과가 없습니다.</div>
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #888;">등록된 데이터가 없습니다.</div>
         {% endfor %}
     </div>
 </body>
