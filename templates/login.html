@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 로그인</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .error { color: red; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h2>관리자 로그인</h2>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <input type="password" name="password" placeholder="비밀번호를 입력하세요" required>
+        </div>
+        <button type="submit">로그인</button>
+    </form>
+</body>
+</html>
